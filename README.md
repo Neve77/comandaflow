@@ -426,13 +426,15 @@ Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICEN
 
 ## 👨‍💻 Autor
 
-**Seu Nome** - [@seugithub](https://github.com/seugithub)
+[![GitHub Avatar](https://github.com/Neve77.png?size=100)](https://github.com/Neve77)
+
+**Neve77** - [@Neve77](https://github.com/Neve77)
 
 ## 💬 Suporte
 
-- 📧 Email: seu.email@example.com
-- 🐦 Twitter: [@seu_twitter](https://twitter.com/seu_twitter)
-- 💬 Discord: seu_usuario#1234
+- 📧 Email: [igorribm@gmail.com](mailto:igorribm@gmail.com)
+- 🐦 Twitter: [@nevevelr7](https://twitter.com/nevevelr7)
+- 💬 Discord: nevevlr#7
 
 ---
 
