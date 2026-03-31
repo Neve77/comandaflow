@@ -46,7 +46,7 @@ export default function Garcom() {
 
   const handleRegistroCliente = async (e) => {
     e.preventDefault();
-    
+
     const validacao = validarFormulario();
     if (validacao) {
       setErro(validacao);
@@ -60,11 +60,11 @@ export default function Garcom() {
         formData.cpf,
         formData.telefone
       );
-      
+
       setSuccess(`${formData.nome} registrado com sucesso!`);
       setFormData({ pulseira: '', nome: '', cpf: '', telefone: '' });
       setTimeout(() => setSuccess(''), 3000);
-      
+
       carregarClientes();
     } catch (err) {
       setErro(err.message || 'Erro ao registrar cliente');
@@ -73,7 +73,7 @@ export default function Garcom() {
 
   const handleDeletarCliente = async (clienteId) => {
     if (!window.confirm('Tem certeza que deseja deletar este cliente?')) return;
-    
+
     try {
       await api.clientes.deletar(clienteId);
       setSuccess('Cliente deletado com sucesso!');
@@ -141,7 +141,7 @@ export default function Garcom() {
           <div className="lg:col-span-1">
             <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
               <h2 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-6">👤 Novo Cliente</h2>
-              
+
               <form onSubmit={handleRegistroCliente} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">🏷️ Pulseira</label>
@@ -237,7 +237,7 @@ export default function Garcom() {
                         🗑️
                       </button>
                     </div>
-                    
+
                     <div className="space-y-1 text-sm text-slate-300 border-t border-slate-700/50 pt-3">
                       {cliente.cpf && (
                         <p className="flex items-center gap-2">

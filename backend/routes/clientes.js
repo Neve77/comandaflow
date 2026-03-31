@@ -12,7 +12,7 @@ async function routes(fastify) {
   fastify.get("/clientes/pulseira/:pulseira", { onRequest: auth }, async (request) => {
     const { pulseira } = request.params;
     const cliente = db.prepare("SELECT * FROM clientes WHERE pulseira = ?").get(pulseira);
-    
+
     if (!cliente) {
       return { erro: "Cliente não encontrado" };
     }
@@ -67,6 +67,33 @@ async function routes(fastify) {
       ORDER BY p.criado_em DESC
     `).all(id);
     return { pedidos };
+  });
+
+  // Deletar cliente (apenas admin)
+  fastify.delete("/clientes/:id", { onRequest: auth }, async (req, reply) => {
+    try {
+      if (req.user.role !== "admin") {
+        return reply.code(403).send({ erro: "Acesso negado" });
+      }
+
+      const { id } = req.params;
+
+      // Verificar se cliente existe
+      const cliente = db.prepare("SELECT * FROM clientes WHERE id = ?").get(id);
+      if (!cliente) {
+        return reply.code(404).send({ erro: "Cliente não encontrado" });
+      }
+
+      // Mover pedidos para status 'cancelado' ao invés de deletar
+      db.prepare("UPDATE pedidos SET status = 'cancelado' WHERE cliente_id = ?").run(id);
+
+      // Deletar cliente
+      db.prepare("DELETE FROM clientes WHERE id = ?").run(id);
+
+      return { ok: true, mensagem: "Cliente deletado com sucesso" };
+    } catch (err) {
+      return reply.code(500).send({ erro: err.message });
+    }
   });
 }
 

@@ -79,7 +79,7 @@ export default function Cozinha() {
 
   const pedidosFiltrados = pedidos.filter((p) => {
     if (filtro === 'todos') return true;
-    return p.status === filtro;
+    return p?.status === filtro;
   });
 
   if (loading) {
@@ -159,14 +159,14 @@ export default function Cozinha() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h2 className="text-2xl font-bold text-slate-100">#{pedido.id}</h2>
-                      {pedido.cliente && (
+                      {pedido?.cliente && (
                         <p className="text-sm text-slate-400">{pedido.cliente}</p>
                       )}
                     </div>
                     <span
                       className={`${badge.bg} ${badge.text} px-3 py-1 rounded-full font-medium text-sm`}
                     >
-                      {badge.icon} {pedido.status.toUpperCase()}
+                      {badge.icon} {pedido?.status ? pedido.status.toUpperCase() : 'PENDENTE'}
                     </span>
                   </div>
 
@@ -191,7 +191,7 @@ export default function Cozinha() {
 
                   {/* Ações */}
                   <div className="flex gap-2">
-                    {pedido.status === 'pendente' && (
+                    {pedido?.status === 'pendente' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'preparando')}
                         className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-orange-600/50"
@@ -200,7 +200,7 @@ export default function Cozinha() {
                       </button>
                     )}
 
-                    {pedido.status === 'preparando' && (
+                    {pedido?.status === 'preparando' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'pronto')}
                         className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-emerald-600/50"
@@ -209,7 +209,7 @@ export default function Cozinha() {
                       </button>
                     )}
 
-                    {pedido.status === 'pronto' && (
+                    {pedido?.status === 'pronto' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'entregue')}
                         className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-blue-600/50"

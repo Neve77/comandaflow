@@ -375,6 +375,31 @@ export default function Home() {
               </div>
             </div>
           </Link>
+
+          {/* Pedidos */}
+          <Link href="/pedidos">
+            <div className="group cursor-pointer">
+              <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50 hover:border-pink-600/50 transition-all duration-300 hover:shadow-2xl hover:shadow-pink-600/20 hover:scale-105 h-full">
+                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform drop-shadow-lg">📋</div>
+                <h3 className="text-xl font-bold text-slate-100 mb-2">Gerenciador de Pedidos</h3>
+                <p className="text-sm text-slate-300 mb-4">Anotações de comanda e gerenciar pedidos</p>
+                <div className="space-y-2 text-xs text-slate-400 mb-4">
+                  <p className="flex items-center gap-2">
+                    <span className="text-pink-400">✓</span> Buscar por comanda
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="text-pink-400">✓</span> Anotar pedidos
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="text-pink-400">✓</span> Editar preços
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-slate-700/50 text-pink-400 font-semibold text-sm group-hover:text-pink-300 transition-colors">
+                  Acessar →
+                </div>
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Fechamento Card - New Feature */}

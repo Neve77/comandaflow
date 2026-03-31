@@ -5,6 +5,7 @@
 Use este padrão para TODOS os commits:
 
 ### Formato
+
 ```
 <type>(<scope>): <subject>
 
@@ -14,19 +15,21 @@ Use este padrão para TODOS os commits:
 ```
 
 ### Type (Obrigatório)
-| Type | Uso | Exemplo |
-|------|-----|---------|
-| `feat` | Nova funcionalidade | `feat(auth): add password reset` |
-| `fix` | Correção de bug | `fix(orders): resolve socket emit failure` |
-| `refactor` | Melhoria de código | `refactor(api): extract status handler` |
-| `style` | Formatação (sem lógica) | `style: fix indentation in auth.js` |
-| `chore` | Deps, build, config | `chore(deps): update fastify to v4.25.0` |
-| `docs` | Documentação | `docs: add API endpoints documentation` |
-| `test` | Testes | `test(auth): add login validation tests` |
-| `ci` | CI/CD workflow | `ci: add ESLint to GitHub Actions` |
-| `perf` | Performance | `perf(db): add index to orders table` |
+
+| Type       | Uso                     | Exemplo                                    |
+| ---------- | ----------------------- | ------------------------------------------ |
+| `feat`     | Nova funcionalidade     | `feat(auth): add password reset`           |
+| `fix`      | Correção de bug         | `fix(orders): resolve socket emit failure` |
+| `refactor` | Melhoria de código      | `refactor(api): extract status handler`    |
+| `style`    | Formatação (sem lógica) | `style: fix indentation in auth.js`        |
+| `chore`    | Deps, build, config     | `chore(deps): update fastify to v4.25.0`   |
+| `docs`     | Documentação            | `docs: add API endpoints documentation`    |
+| `test`     | Testes                  | `test(auth): add login validation tests`   |
+| `ci`       | CI/CD workflow          | `ci: add ESLint to GitHub Actions`         |
+| `perf`     | Performance             | `perf(db): add index to orders table`      |
 
 ### Scope (Recomendado)
+
 - `auth` - Autenticação
 - `api` - API geral
 - `socket` - Socket.IO
@@ -36,12 +39,14 @@ Use este padrão para TODOS os commits:
 - `deps` - Dependências
 
 ### Subject (Obrigatório)
+
 - ✅ Imperativo: "add feature" (não "added" ou "adds")
 - ✅ Sem ponto final (.)
 - ✅ Minúsculo (exceto nomes próprios)
 - ✅ Máximo 50 caracteres
 
 ### Body (Quando necessário)
+
 ```
 feat(orders): add real-time order notifications
 
@@ -55,6 +60,7 @@ and track preparation status.
 ```
 
 ### Footer (Para breaking changes)
+
 ```
 BREAKING CHANGE: remove /pedidos/listar endpoint
 
@@ -64,6 +70,7 @@ Use GET /pedidos?limit=50&offset=0 instead
 ### Exemplos Completos
 
 ✅ **BOM**
+
 ```
 feat(auth): add JWT token refresh
 
@@ -76,6 +83,7 @@ Reduces unnecessary password prompts during active usage.
 ```
 
 ✅ **BOM**
+
 ```
 fix(orders): resolve duplicate message emission
 
@@ -86,6 +94,7 @@ Fixes: #342
 ```
 
 ✅ **BOM**
+
 ```
 refactor: extract duplicate status update logic
 
@@ -94,16 +103,19 @@ Create reusable updateOrderStatus function.
 ```
 
 ❌ **RUIM**
+
 ```
 Update auth.js
 ```
 
 ❌ **RUIM**
+
 ```
 fixed bug in authentication
 ```
 
 ❌ **RUIM**
+
 ```
 Changes made to improve performance
 ```
@@ -122,6 +134,7 @@ main
 ```
 
 ### Nomeação
+
 ```
 <type>/<descriptive-name>
 
@@ -133,6 +146,7 @@ chore/dependencies-update
 ```
 
 ### Fluxo
+
 1. Criar branch da `develop`
 2. Commitar com Conventional Commits
 3. Abrir PR com descrição detalhada
@@ -227,6 +241,7 @@ temp/
 ### API Responses
 
 **Sucesso:**
+
 ```json
 {
   "data": { ... },
@@ -235,6 +250,7 @@ temp/
 ```
 
 **Erro:**
+
 ```json
 {
   "erro": "Mensagem descritiva",
@@ -245,6 +261,7 @@ temp/
 ```
 
 **Validação:**
+
 ```json
 {
   "erro": "Dados inválidos",
@@ -282,6 +299,7 @@ Antes de fazer PR:
 ## 6️⃣ Environment Setup
 
 ### Desenvolvimento
+
 ```bash
 NODE_ENV=development
 PORT=4000
@@ -294,6 +312,7 @@ LOG_LEVEL=debug
 ```
 
 ### Staging (antes de produção)
+
 ```bash
 NODE_ENV=staging
 PORT=4000
@@ -306,6 +325,7 @@ LOG_LEVEL=info
 ```
 
 ### Produção
+
 ```bash
 NODE_ENV=production
 PORT=4000
@@ -330,11 +350,13 @@ LOG_LEVEL=warn
 ```
 
 **Quando bumapar:**
+
 - `MAJOR`: API changes (breaking)
 - `MINOR`: New backward-compatible features
 - `PATCH`: Bug fixes
 
 **Exemplo:**
+
 ```json
 {
   "version": "1.2.3",
@@ -360,16 +382,16 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18.16.0'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
       - name: Run linter
         run: npm run lint
-      
+
       - name: Run tests
         run: npm run test
-      
+
       - name: Build
         run: npm run build
 ```

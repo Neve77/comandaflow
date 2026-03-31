@@ -80,13 +80,12 @@ export default function Admin() {
     }
 
     try {
-      // Aqui você pode adicionar uma rota de deletar no backend
-      // Por enquanto, vamos reimplementar
+      await api.produtos.deletar(produtoId);
       setSuccess('Produto deletado com sucesso!');
       setTimeout(() => setSuccess(''), 3000);
       carregarDados();
     } catch (err) {
-      setErro('Erro ao deletar produto');
+      setErro('Erro ao deletar produto: ' + (err.message || 'Erro desconhecido'));
     }
   };
 
@@ -311,8 +310,8 @@ export default function Admin() {
                       <span>🏷️</span>{c.pulseira}
                     </p>
                   </div>
-                  <p className={`mt-3 text-sm font-medium ${c.status === 'ativo' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {c.status === 'ativo' ? '✅ Ativo' : '❌ Inativo'}
+                  <p className={`mt-3 text-sm font-medium ${c?.status === 'ativo' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {c?.status === 'ativo' ? '✅ Ativo' : '❌ Inativo'}
                   </p>
                 </div>
               ))}

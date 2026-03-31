@@ -49,12 +49,36 @@ async function routes(fastify) {
       const { nome, preco, categoria, ativo } = req.body;
 
       db.prepare(`
-        UPDATE produtos 
+        UPDATE produtos
         SET nome = ?, preco = ?, categoria = ?, ativo = ?
         WHERE id = ?
       `).run(nome, preco, categoria, ativo ? 1 : 0, id);
 
       return { ok: true };
+    } catch (err) {
+      return reply.code(500).send({ erro: err.message });
+    }
+  });
+
+  // Deletar produto (apenas admin) - soft delete
+  fastify.delete("/produtos/:id", { onRequest: auth }, async (req, reply) => {
+    try {
+      if (req.user.role !== "admin") {
+        return reply.code(403).send({ erro: "Acesso negado" });
+      }
+
+      const { id } = req.params;
+
+      // Verificar se produto existe
+      const produto = db.prepare("SELECT * FROM produtos WHERE id = ?").get(id);
+      if (!produto) {
+        return reply.code(404).send({ erro: "Produto não encontrado" });
+      }
+
+      // Soft delete: marcar como inativo
+      db.prepare("UPDATE produtos SET ativo = 0 WHERE id = ?").run(id);
+
+      return { ok: true, mensagem: "Produto deletado com sucesso" };
     } catch (err) {
       return reply.code(500).send({ erro: err.message });
     }

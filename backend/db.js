@@ -51,11 +51,19 @@ CREATE TABLE IF NOT EXISTS pedidos (
   cliente_id INTEGER NOT NULL,
   status TEXT DEFAULT 'pendente',
   total REAL DEFAULT 0,
+  anotacoes TEXT,
   criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
   finalizado_em DATETIME,
   FOREIGN KEY(cliente_id) REFERENCES clientes(id)
 )
 `).run();
+
+// Adicionar coluna anotacoes se não existir (para migração)
+try {
+  db.prepare(`ALTER TABLE pedidos ADD COLUMN anotacoes TEXT`).run();
+} catch (err) {
+  // Coluna já existe, ignorar erro
+}
 
 // Itens de Pedido
 db.prepare(`
@@ -67,6 +75,21 @@ CREATE TABLE IF NOT EXISTS itens (
   preco REAL NOT NULL,
   FOREIGN KEY(pedido_id) REFERENCES pedidos(id),
   FOREIGN KEY(produto_id) REFERENCES produtos(id)
+)
+`).run();
+
+// Comandas
+db.prepare(`
+CREATE TABLE IF NOT EXISTS comandas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero TEXT UNIQUE NOT NULL,
+  cliente_id INTEGER,
+  status TEXT DEFAULT 'aberta',
+  observacao TEXT,
+  data_abertura TEXT DEFAULT CURRENT_TIMESTAMP,
+  data_fechamento TEXT,
+  valor_total REAL DEFAULT 0,
+  FOREIGN KEY(cliente_id) REFERENCES clientes(id)
 )
 `).run();
 

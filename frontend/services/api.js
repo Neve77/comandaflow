@@ -75,6 +75,11 @@ export const clientes = {
       body: JSON.stringify({ nome, cpf, telefone, pulseira }),
     }),
 
+  deletar: (clienteId) =>
+    request(`/clientes/${clienteId}`, {
+      method: 'DELETE',
+    }),
+
   pedidos: (cliente_id) => request(`/clientes/${cliente_id}/pedidos`),
 };
 
@@ -94,6 +99,11 @@ export const produtos = {
     request(`/produtos/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ nome, preco, categoria, ativo }),
+    }),
+
+  deletar: (produtoId) =>
+    request(`/produtos/${produtoId}`, {
+      method: 'DELETE',
     }),
 };
 
@@ -116,6 +126,23 @@ export const pedidos = {
     request(`/pedidos/${id}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    }),
+
+  atualizar: (id, total) =>
+    request(`/pedidos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ total }),
+    }),
+
+  deletar: (id) =>
+    request(`/pedidos/${id}`, {
+      method: 'DELETE',
+    }),
+
+  adicionarNota: (id, nota) =>
+    request(`/pedidos/${id}/notas`, {
+      method: 'POST',
+      body: JSON.stringify({ nota }),
     }),
 };
 

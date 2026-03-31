@@ -133,6 +133,76 @@ async function routes(fastify) {
 
     return { pedidos, total, limit: parseInt(limit), offset: parseInt(offset) };
   });
+
+  // Atualizar preço do pedido (admin)
+  fastify.put("/pedidos/:id", { onRequest: auth }, async (request) => {
+    try {
+      const { id } = request.params;
+      const { total } = request.body;
+
+      if (total === undefined || total <= 0) {
+        return { erro: "Preço inválido" };
+      }
+
+      db.prepare("UPDATE pedidos SET total = ? WHERE id = ?").run(total, id);
+
+      return { ok: true, mensagem: "Preço atualizado com sucesso" };
+    } catch (err) {
+      return { erro: err.message };
+    }
+  });
+
+  // Deletar pedido (admin)
+  fastify.delete("/pedidos/:id", { onRequest: auth }, async (request) => {
+    try {
+      const { id } = request.params;
+
+      // Deletar itens primeiro
+      db.prepare("DELETE FROM itens WHERE pedido_id = ?").run(id);
+
+      // Deletar pedido
+      const result = db.prepare("DELETE FROM pedidos WHERE id = ?").run(id);
+
+      if (result.changes === 0) {
+        return { erro: "Pedido não encontrado" };
+      }
+
+      return { ok: true, mensagem: "Pedido deletado com sucesso" };
+    } catch (err) {
+      return { erro: err.message };
+    }
+  });
+
+  // Adicionar anotação ao pedido
+  fastify.post("/pedidos/:id/notas", { onRequest: auth }, async (request) => {
+    try {
+      const { id } = request.params;
+      const { nota } = request.body;
+
+      if (!nota || nota.trim().length === 0) {
+        return { erro: "Anotação vazia" };
+      }
+
+      const pedido = db.prepare("SELECT * FROM pedidos WHERE id = ?").get(id);
+
+      if (!pedido) {
+        return { erro: "Pedido não encontrado" };
+      }
+
+      // Adicionar nota ao campo de anotações (criar se não existir)
+      const notaFormatada = `[${new Date().toLocaleTimeString('pt-BR')}] ${nota}`;
+      const anotacoesAtuais = pedido.anotacoes ? pedido.anotacoes + "\n" : "";
+
+      db.prepare("UPDATE pedidos SET anotacoes = ? WHERE id = ?").run(
+        anotacoesAtuais + notaFormatada,
+        id
+      );
+
+      return { ok: true, mensagem: "Anotação adicionada" };
+    } catch (err) {
+      return { erro: err.message };
+    }
+  });
 }
 
 module.exports = routes;
