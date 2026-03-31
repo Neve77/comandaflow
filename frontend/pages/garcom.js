@@ -1,144 +1,121 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import * as api from '../services/api';
-import { garcom, conectarSocket } from '../services/socket';
 
 export default function Garcom() {
-  const [produtos, setProdutos] = useState([]);
   const [clientes, setClientes] = useState([]);
-  const [clienteSelecionado, setClienteSelecionado] = useState(null);
-  const [carrinho, setCarrinho] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [success, setSuccess] = useState('');
-  const [total, setTotal] = useState(0);
+  const [formData, setFormData] = useState({
+    pulseira: '',
+    nome: '',
+    cpf: '',
+    telefone: '',
+  });
   const [filtro, setFiltro] = useState('');
 
   useEffect(() => {
-    carregarDados();
-    conectarSocket();
+    carregarClientes();
   }, []);
 
-  useEffect(() => {
-    const novoTotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-    setTotal(novoTotal);
-  }, [carrinho]);
-
-  const carregarDados = async () => {
+  const carregarClientes = async () => {
     try {
-      const [produtosRes, clientesRes] = await Promise.all([
-        api.produtos.listar(),
-        api.clientes.listar(),
-      ]);
-
-      setProdutos(produtosRes.produtos || []);
-      setClientes(clientesRes.clientes || []);
+      const data = await api.clientes.listar();
+      setClientes(data.clientes || []);
+      setErro('');
     } catch (err) {
-      setErro('Erro ao carregar dados');
+      setErro('Erro ao carregar clientes');
     } finally {
       setLoading(false);
     }
   };
 
-  const adicionarAoCarrinho = (produto) => {
-    const existente = carrinho.find((item) => item.produto_id === produto.id);
-
-    if (existente) {
-      setCarrinho(
-        carrinho.map((item) =>
-          item.produto_id === produto.id
-            ? { ...item, quantidade: item.quantidade + 1 }
-            : item
-        )
-      );
-    } else {
-      setCarrinho([
-        ...carrinho,
-        {
-          produto_id: produto.id,
-          nome: produto.nome,
-          preco: produto.preco,
-          quantidade: 1,
-        },
-      ]);
-    }
-    setSuccess(`${produto.nome} adicionado!`);
-    setTimeout(() => setSuccess(''), 2000);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const removerDoCarrinho = (produto_id) => {
-    setCarrinho(carrinho.filter((item) => item.produto_id !== produto_id));
+  const validarFormulario = () => {
+    if (!formData.pulseira.trim()) return 'Pulseira é obrigatória';
+    if (!formData.nome.trim()) return 'Nome é obrigatório';
+    if (formData.cpf && formData.cpf.length < 11) return 'CPF deve ter 11 dígitos';
+    if (formData.telefone && formData.telefone.length < 10) return 'Telefone deve ter no mínimo 10 dígitos';
+    return '';
   };
 
-  const atualizarQuantidade = (produto_id, quantidade) => {
-    if (quantidade <= 0) {
-      removerDoCarrinho(produto_id);
-      return;
-    }
-    setCarrinho(
-      carrinho.map((item) =>
-        item.produto_id === produto_id ? { ...item, quantidade } : item
-      )
-    );
-  };
-
-  const enviarPedido = async () => {
-    if (!clienteSelecionado) {
-      setErro('Selecione um cliente');
-      return;
-    }
-    if (carrinho.length === 0) {
-      setErro('Carrinho vazio');
+  const handleRegistroCliente = async (e) => {
+    e.preventDefault();
+    
+    const validacao = validarFormulario();
+    if (validacao) {
+      setErro(validacao);
       return;
     }
 
     try {
-      const itens = carrinho.map((item) => ({
-        produto_id: item.produto_id,
-        quantidade: item.quantidade,
-      }));
-
-      const resultado = await api.pedidos.criar(clienteSelecionado.pulseira, itens);
-      garcom.enviarPedido(resultado.id);
-
-      setSuccess(`✓ Pedido #${resultado.id} enviado! Total: R$ ${resultado.total.toFixed(2)}`);
-      setCarrinho([]);
-      setClienteSelecionado(null);
-      setErro('');
-
+      await api.clientes.criar(
+        formData.pulseira,
+        formData.nome,
+        formData.cpf,
+        formData.telefone
+      );
+      
+      setSuccess(`${formData.nome} registrado com sucesso!`);
+      setFormData({ pulseira: '', nome: '', cpf: '', telefone: '' });
       setTimeout(() => setSuccess(''), 3000);
+      
+      carregarClientes();
     } catch (err) {
-      setErro(err.message);
+      setErro(err.message || 'Erro ao registrar cliente');
     }
   };
 
-  const produtosFiltrados = produtos.filter((p) =>
-    p.nome.toLowerCase().includes(filtro.toLowerCase()) ||
-    p.categoria.toLowerCase().includes(filtro.toLowerCase())
+  const handleDeletarCliente = async (clienteId) => {
+    if (!window.confirm('Tem certeza que deseja deletar este cliente?')) return;
+    
+    try {
+      await api.clientes.deletar(clienteId);
+      setSuccess('Cliente deletado com sucesso!');
+      setTimeout(() => setSuccess(''), 3000);
+      carregarClientes();
+    } catch (err) {
+      setErro('Erro ao deletar cliente');
+    }
+  };
+
+  const clientesFiltrados = clientes.filter(c =>
+    c.nome.toLowerCase().includes(filtro.toLowerCase()) ||
+    c.pulseira.includes(filtro) ||
+    c.cpf.includes(filtro)
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-slate-600">Carregando...</p>
+          <p className="text-slate-300">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute top-0 left-1/3 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-float pointer-events-none" style={{animationDelay: '1s'}} />
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+      <div className="backdrop-blur-sm bg-slate-800/30 border-b border-slate-700/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">👨‍💼 Garçom</h1>
-            <p className="text-sm text-slate-500">Gerenciar pedidos</p>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">👨‍💼 Garçom</h1>
+            <p className="text-sm text-slate-400">Cadastro e gerenciamento de clientes</p>
           </div>
           <Link href="/">
-            <button className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-4 py-2 rounded-lg text-sm font-medium transition">
+            <button className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-600/50">
               ← Menu
             </button>
           </Link>
@@ -147,133 +124,140 @@ export default function Garcom() {
 
       {/* Notifications */}
       {erro && (
-        <div className="fixed top-20 right-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-md">
+        <div className="fixed top-20 right-4 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg shadow-lg max-w-md backdrop-blur-sm z-50">
           {erro}
         </div>
       )}
       {success && (
-        <div className="fixed top-20 right-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg shadow-lg max-w-md">
+        <div className="fixed top-20 right-4 bg-emerald-500/20 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-lg shadow-lg max-w-md backdrop-blur-sm z-50">
           {success}
         </div>
       )}
 
       {/* Main */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lado Esquerdo - Produtos */}
+          {/* Formulário de Cadastro */}
+          <div className="lg:col-span-1">
+            <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-6">
+              <h2 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-6">👤 Novo Cliente</h2>
+              
+              <form onSubmit={handleRegistroCliente} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">🏷️ Pulseira</label>
+                  <input
+                    type="text"
+                    name="pulseira"
+                    value={formData.pulseira}
+                    onChange={handleInputChange}
+                    placeholder="Número da pulseira"
+                    className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">👤 Nome</label>
+                  <input
+                    type="text"
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleInputChange}
+                    placeholder="Nome completo"
+                    className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">🆔 CPF</label>
+                  <input
+                    type="text"
+                    name="cpf"
+                    value={formData.cpf}
+                    onChange={handleInputChange}
+                    placeholder="00000000000"
+                    maxLength="11"
+                    className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">📱 Telefone</label>
+                  <input
+                    type="tel"
+                    name="telefone"
+                    value={formData.telefone}
+                    onChange={handleInputChange}
+                    placeholder="(00) 99000-0000"
+                    className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium py-2 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-blue-600/50"
+                >
+                  ➕ Registrar Cliente
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Lista de Clientes */}
           <div className="lg:col-span-2">
-            {/* Busca/Filtro */}
             <div className="mb-6">
               <input
                 type="text"
-                placeholder="🔍 Buscar produtos..."
+                placeholder="🔍 Buscar por nome, pulseira ou CPF..."
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full px-4 py-3 bg-slate-800/40 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
               />
             </div>
 
-            {/* Grid de Produtos */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {produtosFiltrados.map((produto) => (
-                <button
-                  key={produto.id}
-                  onClick={() => adicionarAoCarrinho(produto)}
-                  className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition transform hover:scale-105 text-left border border-slate-200"
-                >
-                  <div className="text-3xl mb-2">🍕</div>
-                  <p className="font-semibold text-slate-900 text-sm">{produto.nome}</p>
-                  <p className="text-xs text-slate-500 mb-2">{produto.categoria}</p>
-                  <p className="text-lg font-bold text-purple-600">R$ {parseFloat(produto.preco).toFixed(2)}</p>
-                </button>
-              ))}
-            </div>
-
-            {produtosFiltrados.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-slate-600">Nenhum produto encontrado</p>
-              </div>
-            )}
-          </div>
-
-          {/* Lado Direito - Carrinho */}
-          <div className="bg-white rounded-xl shadow-md p-6 h-fit sticky top-24">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">🛒 Carrinho</h2>
-
-            {/* Seletor de Cliente */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Cliente</label>
-              <select
-                value={clienteSelecionado?.id || ''}
-                onChange={(e) => {
-                  const cliente = clientes.find((c) => c.id === parseInt(e.target.value));
-                  setClienteSelecionado(cliente);
-                  setErro('');
-                }}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm"
-              >
-                <option value="">Selecione...</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome} (Pulseira: {cliente.pulseira})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Itens do Carrinho */}
-            <div className="space-y-3 max-h-64 overflow-y-auto mb-6">
-              {carrinho.length === 0 ? (
-                <p className="text-center text-slate-500 text-sm py-8">Carrinho vazio</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {clientesFiltrados.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-slate-400">Nenhum cliente encontrado</p>
+                </div>
               ) : (
-                carrinho.map((item) => (
-                  <div key={item.produto_id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-900 text-sm">{item.nome}</p>
-                      <p className="text-xs text-slate-500">R$ {parseFloat(item.preco).toFixed(2)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                clientesFiltrados.map((cliente) => (
+                  <div key={cliente.id} className="bg-slate-800/40 backdrop-blur-xl rounded-lg border border-blue-600/50 p-4 hover:border-blue-500/80 transition hover:shadow-lg hover:shadow-blue-600/20">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <p className="font-bold text-slate-100 text-lg">{cliente.nome}</p>
+                        <p className="text-sm text-blue-400 font-semibold">🏷️ Pulseira: {cliente.pulseira}</p>
+                      </div>
                       <button
-                        onClick={() => atualizarQuantidade(item.produto_id, item.quantidade - 1)}
-                        className="bg-slate-200 hover:bg-slate-300 w-6 h-6 rounded flex items-center justify-center text-sm"
+                        onClick={() => handleDeletarCliente(cliente.id)}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-2 py-1 rounded text-sm transition border border-red-500/30"
+                        title="Deletar cliente"
                       >
-                        −
-                      </button>
-                      <span className="w-6 text-center text-sm font-medium">{item.quantidade}</span>
-                      <button
-                        onClick={() => atualizarQuantidade(item.produto_id, item.quantidade + 1)}
-                        className="bg-slate-200 hover:bg-slate-300 w-6 h-6 rounded flex items-center justify-center text-sm"
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={() => removerDoCarrinho(item.produto_id)}
-                        className="bg-red-100 hover:bg-red-200 text-red-600 px-2 py-1 rounded text-xs"
-                      >
-                        ✕
+                        🗑️
                       </button>
                     </div>
+                    
+                    <div className="space-y-1 text-sm text-slate-300 border-t border-slate-700/50 pt-3">
+                      {cliente.cpf && (
+                        <p className="flex items-center gap-2">
+                          <span>🆔</span>{cliente.cpf}
+                        </p>
+                      )}
+                      {cliente.telefone && (
+                        <p className="flex items-center gap-2">
+                          <span>📱</span>{cliente.telefone}
+                        </p>
+                      )}
+                    </div>
+
+                    <p className={`mt-3 text-sm font-medium ${cliente.status === 'ativo' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {cliente.status === 'ativo' ? '✅ Ativo' : '❌ Inativo'}
+                    </p>
                   </div>
                 ))
               )}
             </div>
-
-            {/* Total */}
-            <div className="border-t border-slate-200 pt-4 mb-4">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-slate-700">Total:</span>
-                <span className="text-2xl font-bold text-purple-600">R$ {total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Botão Enviar */}
-            <button
-              onClick={enviarPedido}
-              disabled={!clienteSelecionado || carrinho.length === 0}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 rounded-lg transition"
-            >
-              📤 Enviar Pedido
-            </button>
           </div>
         </div>
       </div>
