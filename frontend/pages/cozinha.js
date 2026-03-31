@@ -84,26 +84,30 @@ export default function Cozinha() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-slate-600">Carregando pedidos...</p>
+          <p className="text-slate-300">Carregando pedidos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute top-0 right-1/3 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-float pointer-events-none" style={{animationDelay: '1s'}} />
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+      <div className="backdrop-blur-sm bg-slate-800/30 border-b border-slate-700/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">👨‍🍳 Cozinha</h1>
-            <p className="text-sm text-slate-500">Fila de pedidos em tempo real</p>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">👨‍🍳 Cozinha</h1>
+            <p className="text-sm text-slate-400">Fila de pedidos em tempo real</p>
           </div>
           <Link href="/">
-            <button className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-4 py-2 rounded-lg text-sm font-medium transition">
+            <button className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-600/50">
               ← Menu
             </button>
           </Link>
@@ -112,23 +116,23 @@ export default function Cozinha() {
 
       {/* Notifications */}
       {erro && (
-        <div className="fixed top-20 right-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg">
+        <div className="fixed top-20 right-4 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm z-50">
           {erro}
         </div>
       )}
 
       {/* Main */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         {/* Filtros */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {['todos', 'pendente', 'preparando', 'pronto', 'entregue'].map((status) => (
             <button
               key={status}
               onClick={() => setFiltro(status)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
+              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap border ${
                 filtro === status
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white border-orange-500/50'
+                  : 'bg-slate-800/40 text-slate-300 border-slate-600/50 hover:border-slate-500/50'
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -140,8 +144,8 @@ export default function Cozinha() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pedidosFiltrados.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-3xl mb-2">🎉</p>
-              <p className="text-slate-600">Nenhum pedido neste status</p>
+              <p className="text-5xl mb-2">🎉</p>
+              <p className="text-slate-400">Nenhum pedido neste status</p>
             </div>
           ) : (
             pedidosFiltrados.map((pedido) => {
@@ -149,14 +153,14 @@ export default function Cozinha() {
               return (
                 <div
                   key={pedido.id}
-                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 border-l-4 border-purple-600"
+                  className="bg-slate-800/40 backdrop-blur-xl rounded-xl border border-orange-600/50 hover:border-orange-500/80 shadow-lg hover:shadow-orange-600/20 transition p-6"
                 >
                   {/* Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-slate-900">#{pedido.id}</h2>
+                      <h2 className="text-2xl font-bold text-slate-100">#{pedido.id}</h2>
                       {pedido.cliente && (
-                        <p className="text-sm text-slate-600">{pedido.cliente}</p>
+                        <p className="text-sm text-slate-400">{pedido.cliente}</p>
                       )}
                     </div>
                     <span
@@ -167,14 +171,14 @@ export default function Cozinha() {
                   </div>
 
                   {/* Itens */}
-                  <div className="bg-slate-50 rounded-lg p-4 mb-4 max-h-48 overflow-y-auto">
-                    <h3 className="font-bold text-slate-900 mb-3 text-sm">Itens do pedido:</h3>
+                  <div className="bg-slate-700/40 rounded-lg p-4 mb-4 max-h-48 overflow-y-auto border border-slate-600/50">
+                    <h3 className="font-bold text-slate-100 mb-3 text-sm">Itens do pedido:</h3>
                     <div className="space-y-2">
                       {pedido.itens && pedido.itens.length > 0 ? (
                         pedido.itens.map((item) => (
                           <div key={item.id} className="flex justify-between items-center text-sm">
-                            <span className="text-slate-700">{item.produto_nome}</span>
-                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
+                            <span className="text-slate-300">{item.produto_nome}</span>
+                            <span className="bg-orange-600/40 text-orange-300 px-2 py-1 rounded font-medium border border-orange-600/50">
                               x{item.quantidade}
                             </span>
                           </div>
@@ -190,7 +194,7 @@ export default function Cozinha() {
                     {pedido.status === 'pendente' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'preparando')}
-                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 rounded-lg transition"
+                        className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-orange-600/50"
                       >
                         👨‍🍳 Preparando
                       </button>
@@ -199,7 +203,7 @@ export default function Cozinha() {
                     {pedido.status === 'preparando' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'pronto')}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded-lg transition"
+                        className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-emerald-600/50"
                       >
                         ✅ Pronto
                       </button>
@@ -208,7 +212,7 @@ export default function Cozinha() {
                     {pedido.status === 'pronto' && (
                       <button
                         onClick={() => mudarStatus(pedido.id, 'entregue')}
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg transition"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium py-2 rounded-lg transition shadow-lg hover:shadow-blue-600/50"
                       >
                         🚚 Entregue
                       </button>
